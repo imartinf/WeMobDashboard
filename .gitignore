@@ -1,0 +1,6 @@
+# Ignore Mac files
+.DS_store
+
+# Ignore large files
+src/spain-latest.osm.pbf
+src/Wemob_ultimos\ _6\ _meses.csv

@@ -1,0 +1,22 @@
+{
+    "SIDEBAR_STYLE" : {
+        "padding": "20px 10px"
+    },
+
+    "CONTENT_STYLE" : {
+
+        "top": 0,
+        "bottom": 0,
+        "padding": "20px 10px",
+        "width":"60vw",
+        "height": "80vh"
+    },
+
+    "TEXT_STYLE" : {
+        "textAlign": "center"
+    },
+
+    "CARD_TEXT_STYLE" : {
+        "textAlign": "center"
+    }
+}

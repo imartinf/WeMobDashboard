@@ -1,0 +1,8 @@
+{
+	"usuario" : "wemob",
+	"contrasena" : "wemobuser",
+	"url_servidor" : "34.78.202.247",
+	"puerto" : "3306",
+	"esquema" : "route_management",
+	"plugin_autenticacion" : "mysql_native_password"
+}
