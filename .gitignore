@@ -4,3 +4,10 @@
 # Ignore large files
 src/spain-latest.osm.pbf
 src/Wemob_ultimos\ _6\ _meses.csv
+src/m.html
+src/stop_intervals.csv
+intervals.csv
+.gitignore
+intervals_v2.csv
+workspace.code-workspace
+__pycache__/functions.cpython-39.pyc
