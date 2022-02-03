@@ -13,7 +13,7 @@ import os
 import pandas as pd
 import json
 
-# For deployment in Jupyter Notebook use this:
+# For development in Jupyter Notebook use this:
 import jupyter_dash
 
 
@@ -221,4 +221,4 @@ def create_and_run_app(df_s:pd.DataFrame):
             ])
         ]
     )
-    app.run_server(debug=True)
+    app.run_server(debug=True, port=8052)

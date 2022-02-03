@@ -130,15 +130,15 @@ def check_missing_data_truck_off(intervals, last_index, df, row, SPEED_THRESHOLD
         delta = (np.datetime64(time1) - prev_time)/ np.timedelta64(60, 's')
         # If it's longer than a minute we register a stop interval
         if delta > 1:
-            print(prev_time, time1)
+            # print(prev_time, time1)
             if (prev_time_row["speed"].values[0] > SPEED_THRESHOLD) and (row["speed"] > SPEED_THRESHOLD):
                 prev_time_row["vehicle_status"] = "missing data"
-                print("missing data detected")
-                print(prev_time_row.iloc[0])
+                # print("missing data detected")
+                # print(prev_time_row.iloc[0])
             # Here we are in CASE 1. The truck engine has stopped and we didn't receive any data.
             else:
                 prev_time_row["vehicle_status"] = "truck off"
-                print("truck off detected")
+                # print("truck off detected")
             # A stop interval is registered, the index of the data we are checking is stored in last_index so we can resume
             # iteration here and we continue
             intervals = add_interval(intervals, prev_time_row.iloc[0], row, delta)
