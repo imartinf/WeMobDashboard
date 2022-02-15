@@ -13,7 +13,10 @@ import pandas as pd
 import hvplot.pandas
 from holoviews.operation.datashader import datashade
 
-df = pd.read_csv('intervals_07-01-22.csv')
+from dashboard.app import app
+
+
+df = pd.read_csv('/Users/imartinf/Documents/UPM/MUIT_UPM/BECA/CODE/WeMobDashboard/src/intervals_07-01-22.csv')
 # df = df[df.plate.isin(df.plate.unique()[:10])]
 df["easting"], df["northing"] = hv.Tiles.lon_lat_to_easting_northing(
 df["begin_long"], df["begin_lat"]
@@ -24,11 +27,9 @@ d_colors = dict([(y,x+1) for x,y in enumerate(sorted(set(df["status"])))])
 # pd.options.plotting.backend = 'holoviews'
 hv.extension('plotly')
 
-mapbox_token = open(".mapbox_token").read()
+mapbox_token = open("/Users/imartinf/Documents/UPM/MUIT_UPM/BECA/CODE/WeMobDashboard/conf/.mapbox_token").read()
 
-app = dash.Dash(external_stylesheets=[dbc.themes.MINTY])
-
-app.layout = dbc.Container([
+layout = dbc.Container([
     html.H1("HEATMAP OF STOP INTERVALS IN WEMOB TRUCKS",  className="bg-primary text-white p-2 mb-2 text-center"),
     dbc.Row(id="contents", children=[
         dcc.Graph(id="graph")
@@ -84,7 +85,7 @@ def update_contents(xaxis_limits,status,plates,drivers):
         size=hv.dim("delta").log10()*5,
         cmap="magma"
     ))
-    points = datashade(points)
+    # points = datashade(points)
     tiles = hv.Tiles().opts(mapboxstyle="light", accesstoken=mapbox_token)
     selection_linker = hv.selection.link_selections.instance()
     overlay = selection_linker(tiles * points)
@@ -109,6 +110,3 @@ def update_contents(xaxis_limits,status,plates,drivers):
     # print(overlay)
 
     # return overlay
-
-
-app.run_server(port=8051, debug=True)

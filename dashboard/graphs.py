@@ -10,24 +10,29 @@ import numpy as np
 import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 from sklearn.cluster import DBSCAN
+from sklearn.metrics import silhouette_samples
+from hdbscan import HDBSCAN
 
 import holoviews as hv
 from holoviews.plotting.plotly.dash import to_dash
 from holoviews.operation.datashader import datashade
 
+from dashboard.app import app
+
 EARTH_RADIUS=63710000
 
-df = pd.read_csv('intervals_07-01-22.csv')
+df = pd.read_csv('/Users/imartinf/Documents/UPM/MUIT_UPM/BECA/CODE/WeMobDashboard/src/intervals_07-01-22.csv')
 # df = df[df.plate.isin(df.plate.unique()[:10])]
 df["easting"], df["northing"] = hv.Tiles.lon_lat_to_easting_northing(
 df["begin_long"], df["begin_lat"]
 )
 
-mapbox_token = open(".mapbox_token").read()
+# ESTO ES UN POCO CHAPUZA. ME VOY A CARGAR LAS PARADAS "TRUCK OFF" DE MENOS DE 5 MINUTOS
+df = df[(df["status"] != "truck off") | (df["status"] == "truck off") & (df["delta"] >= 5)]
 
-app = dash.Dash(external_stylesheets=[dbc.themes.MINTY])
+mapbox_token = open("/Users/imartinf/Documents/UPM/MUIT_UPM/BECA/CODE/WeMobDashboard/conf/.mapbox_token").read()
 
-app.layout = dbc.Container([
+layout = dbc.Container([
         html.Div([
         html.H1("STOP INTERVALS IN WEMOB TRUCKS",  className="bg-primary text-white p-2 mb-2 text-center"),
         dbc.Tabs([
@@ -39,7 +44,13 @@ app.layout = dbc.Container([
                 html.Div(id="dbscan"),
                 dcc.Input(id="eps", type="number", placeholder="epsilon (m)", value=50),
                 dcc.Input(id="min_samples", type="number", placeholder="min samples", value=10)
-            ], label="DBSCAN")
+            ], label="DBSCAN"),
+            dbc.Tab(id="hdbscan_tab", children=[
+                html.Div(id="hdbscan"),
+                dcc.Input(id="min_cluster_size", type="number", placeholder="epsilon (m)", value=10),
+                dcc.Input(id="min_points", type="number", placeholder="min samples", value=100),
+                dcc.Input(id="h_eps", type="number", placeholder="epsilon (m)", value=100),
+            ], label="HDBSCAN")
         ]),
         dbc.Row([
             dbc.Col([
@@ -183,6 +194,7 @@ def update_dbscan_map(e, ms,xaxis_limits,plates,drivers):
 
     dff = dff[dff["status"] != "missing data"]
     X = dff[["begin_lat", "begin_long"]].to_numpy()
+    # X = np.radians(X)
     clustering = DBSCAN(eps=e/EARTH_RADIUS, min_samples=ms, metric="haversine")
     labels = clustering.fit_predict(X)
 
@@ -212,4 +224,77 @@ def update_dbscan_map(e, ms,xaxis_limits,plates,drivers):
     table = hv.Table(dff.sort_values(by="label")[["label", "plate", "begin_lat", "begin_long", "start"]])
 
     return to_dash(app, [overlay + table], reset_button=True, button_class=dbc.Button).children
-app.run_server(debug=True)
+
+
+
+@app.callback(
+    Output("hdbscan", "children"),
+    [Input("min_cluster_size", "value"),
+    Input("min_points", "value"),
+    Input("h_eps", "value"),
+    Input("x_limits", "value"),
+    Input("plate", "value"),
+    Input("driver", "value")
+    ]
+)
+
+def update_hdbscan_map(mcs, mpts, e, xaxis_limits,plates,drivers):
+    dff = df[df['delta'] <= xaxis_limits[1]]
+    dff = dff[dff['delta'] >= xaxis_limits[0]]
+    dff = dff[dff.plate.isin(list(plates))]
+    dff = dff[dff.begin_driver.isin(list(drivers))]
+
+    m_pts = None if mpts==0 else mpts 
+
+    dff = dff[dff["status"] != "missing data"]
+    X = dff[["begin_lat", "begin_long"]].to_numpy()
+    # X = np.radians(X)
+    clustering = HDBSCAN(min_cluster_size=mcs, min_samples=m_pts, cluster_selection_epsilon=e/EARTH_RADIUS, metric="haversine")
+    clustering.fit(X)
+
+    labels = clustering.labels_
+    nb_labels = labels.max() + 1
+
+    dff["label"]=labels
+    dff["sil"] = silhouette_samples(X, labels, metric='haversine')
+    dff = dff[dff["label"] != -1]
+
+    centroids = pd.DataFrame(columns=["label", "easting", "northing", "n_points", "silhouette", "ispdi"])
+
+    for label, sample in dff.groupby("label"):
+        east = sample.easting.mean()
+        north = sample.northing.mean()
+        npts = len(sample)
+        sil = sample.sil.mean()
+        centroids = centroids.append({"label": label, "easting": east, "northing": north, "n_points": npts, "silhouette":sil, "ispdi": False}, ignore_index=True)
+
+    dataset = hv.Dataset(dff)
+    points = hv.Points(
+        dataset, kdims=["easting", "northing"], vdims=["delta", "label"]
+    )
+
+    cents = hv.Points(
+        centroids, kdims=["easting", "northing"]
+    ).opts(hv.opts.Points(
+        color="red"
+    ))
+
+    points.opts(
+        hv.opts.Points(
+        color=hv.dim("label"),
+        alpha=0.25,
+        cmap="magma")
+    )
+
+    tiles = hv.Tiles().opts(mapboxstyle="light", accesstoken=mapbox_token)
+
+    overlay = (tiles * points * cents)
+    overlay.opts(
+        title="HDBSCAN CLUSTERING WITH MIN_CLUSTER_SIZE = %d AND MIN_SAMPLES = %d (%d POINTS) | %d CLUSTERS FOUND" % (mcs, mpts, len(dataset), nb_labels)
+    )
+
+    hist = hv.Histogram(np.histogram(labels, bins=np.arange(0,102,1)))
+
+    table = hv.Table(centroids)
+
+    return to_dash(app, [overlay + table], reset_button=True, button_class=dbc.Button).children

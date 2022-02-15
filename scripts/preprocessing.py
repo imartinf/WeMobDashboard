@@ -19,8 +19,6 @@ def clean(df:pd.DataFrame) -> pd.DataFrame:
 	"""
 	# Remove duplicate rows (there are usually no duplicates, but jic)
 	df = df.drop_duplicates()
-	# Timestamp as datetime
-	df.timestamp = pd.to_datetime(df.timestamp)
 	# Check 0<fuel_level<100
 	df.fuel_level[(df.fuel_level<0) | (df.fuel_level>100)] = np.nan
 	return df

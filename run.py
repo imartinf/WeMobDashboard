@@ -26,10 +26,9 @@ import numpy
 import os
 from datetime import datetime
 
-import app
-from preprocessing import preprocessing as prep
-from connection import get_db
-from app import create_and_run_app
+from dashboard import index
+import scripts.preprocessing as prep
+import scripts.connection as con
 
 def parse_command_line_args():
     parser = argparse.ArgumentParser(
@@ -75,15 +74,13 @@ def _main_():
     args = parse_command_line_args()
     params = load_json(args.conf)
     display_params(args, params)
-    init_time = datetime.now()
-    print("Process initiated at time: ", init_time.strftime("%H:%M:%S"))
 
-    db = get_db(params, args)
-    df = prep(db)
+    # db = con.get_db(params, args)
+    # df = prep.preprocessing(db)
+    # df.to_csv('/Users/imartinf/Documents/UPM/MUIT_UPM/BECA/CODE/WeMobDashboard/src/sample_db.csv')
+    print('here')
 
-    create_and_run_app(df)
-
-    print("Finished at time: ", datetime.now().strftime("%H:%M:%S"), "Execution time: ", str(datetime.now() - init_time))
+    index.app.run_server(debug=True)
 
 if __name__ == "__main__":
     _main_()
