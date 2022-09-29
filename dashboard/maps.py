@@ -16,7 +16,7 @@ from holoviews.operation.datashader import datashade
 from dashboard.app import app
 
 
-df = pd.read_csv('/Users/imartinf/Documents/UPM/MUIT_UPM/BECA/CODE/WeMobDashboard/src/intervals_07-01-22.csv')
+df = pd.read_csv('/Users/imartinf/Documents/UPM/MUIT_UPM/BECA/CODE/WeMobDashboard/src/intervals_1month_9trucks.csv')
 # df = df[df.plate.isin(df.plate.unique()[:10])]
 df["easting"], df["northing"] = hv.Tiles.lon_lat_to_easting_northing(
 df["begin_long"], df["begin_lat"]

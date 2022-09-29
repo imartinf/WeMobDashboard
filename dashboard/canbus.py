@@ -30,17 +30,17 @@ from dashboard.app import app
 
 
 # We start with a sample of the dataframe for test speed
-df_s = pd.read_csv('/Users/imartinf/Documents/UPM/MUIT_UPM/BECA/CODE/WeMobDashboard/src/sample_db_cleaned.csv')
-df_s = df_s.sample(frac=0.1)
+df_s = pd.read_csv('/Users/imartinf/Documents/UPM/MUIT_UPM/BECA/CODE/db_1month_9trucks.csv')
+# df_s = df_s.sample(frac=0.1)
 
 # Timestamp as datetime
 df_s.timestamp = pd.to_datetime(df_s.timestamp)
 
 df_s.loc[:,"color"] = ""
 df_s.loc[df_s.speed==0.0, "color"] = "orange"
-df_s.loc[(df_s.speed>0.0) & (df_s.speed>=50.0), "color"].color = "blue"
-df_s.loc[(df_s.speed>50.0) & (df_s.speed>=90.0), "color"] = "green"
-df_s.loc[(df_s.speed>90.0), "color"] = "crimson"
+df_s.loc[(df_s.speed>0.0) & (df_s.speed<=50.0), "color"].color = "blue"
+df_s.loc[(df_s.speed>50.0) & (df_s.speed<=90.0), "color"] = "green"
+df_s.loc[(df_s.speed>90.0), "color"] = "darkred"
 
 dplates = []
 for p in df_s.plate.unique():
@@ -121,7 +121,7 @@ content = html.Div(children=[
     #     figure=fig
     # )
     html.Iframe(id='map', srcDoc=open('src/m.html', 'r').read(), width='100%',
-    height= '100%')
+    height= '900px')
     ]
 )
 

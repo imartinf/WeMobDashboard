@@ -7,7 +7,7 @@ sys.path.append('../../../')
 import glob
 import pandas
 import os
-import numpy
+import numpy as np
 from sklearn.neighbors import NearestNeighbors
 from sklearn.cluster import DBSCAN
 from matplotlib import pyplot as plt
@@ -20,11 +20,11 @@ import matplotlib.cm as cm
 import random
 
 
-EARTH_RADIUS=63710000
+EARTH_RADIUS=6371000
 
 def _main_():
-    df = pandas.read_csv('intervals_07-01-22.csv')
-    df = df[df.plate.isin(df.plate.unique()[:10])]
+    df = pandas.read_csv('/Users/imartinf/Documents/UPM/MUIT_UPM/BECA/CODE/WeMobDashboard/src/intervals_1month_9trucks.csv')
+    # df = df[df.plate.isin(df.plate.unique()[:10])]
     X = df[["begin_lat", "begin_long"]].to_numpy()
 
 	# neigh = NearestNeighbors(n_neighbors=2, metric="cosine")
@@ -41,7 +41,7 @@ def _main_():
     for e in [i/EARTH_RADIUS for i in [50, 100, 200, 500, 750, 1000]]:
         for ms in [2, 4, 6, 10]:
             clustering = DBSCAN(eps=e, min_samples=ms, metric="haversine")
-            labels = clustering.fit_predict(X)
+            labels = clustering.fit_predict(np.radians(X))
             nb_labels = len(set(labels)) - 1
             print('Epsilon: ', e, 'Number of labels: ', nb_labels)
             print('Min samples: ', ms)

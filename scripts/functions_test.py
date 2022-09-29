@@ -2,12 +2,12 @@ import pandas as pd
 from functions import *
 
 def _main_():
-    toy_df = pd.read_csv('../df_07-01-22.csv')
-    print('CSV load successfully')
+    toy_df = pd.read_csv('/Users/imartinf/Documents/UPM/MUIT_UPM/BECA/CODE/db_1month_9trucks.csv')
+    print('CSV loaded successfully')
     # print(toy_df)
 
     intervals = get_stop_intervals(toy_df)
-    intervals.to_csv('intervals_07-01-22.csv')
+    intervals.to_csv('intervals_1month_9trucks.csv')
     print('intervals saved in same folder')
     print('EOS')
 
